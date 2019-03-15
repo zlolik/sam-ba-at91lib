@@ -1,0 +1,5 @@
+tcl_lib/
+*.bin
+*.elf
+*.map
+*.o
