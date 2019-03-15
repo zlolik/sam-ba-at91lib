@@ -56,16 +56,17 @@ static unsigned char configuredBinaryPage;
 //------------------------------------------------------------------------------
 
 static const At45Desc at45Devices[] = {
-    {  512,  1, 264,   9, 0x0C, "AT45DB011D"},
-    { 1024,  1, 264,   9, 0x14, "AT45DB021D"},
-    { 2048,  1, 264,   9, 0x1C, "AT45DB041D"},
-    { 4096,  1, 264,   9, 0x24, "AT45DB081D"},
-    { 4096,  1, 528,  10, 0x2C, "AT45DB161D"},
-    { 8192,  1, 528,  10, 0x34, "AT45DB321D"},
-    { 8192,  1, 1056, 11, 0x3C, "AT45DB642D"},
-    {16384,  1, 1056, 11, 0x10, "AT45DB1282"},
-    {16384,  1, 2112, 12, 0x18, "AT45DB2562"},
-    {32768,  1, 2112, 12, 0x20, "AT45DB5122"}
+    {  512,  1, 264,   9, 0x0C00, "AT45DB011D"},
+    { 1024,  1, 264,   9, 0x1400, "AT45DB021D"},
+    { 2048,  1, 264,   9, 0x1C00, "AT45DB041D"},
+    { 4096,  1, 264,   9, 0x2400, "AT45DB081D"},
+    { 4096,  1, 528,  10, 0x2C00, "AT45DB161D"},
+    { 8192,  1, 528,  10, 0x3400, "AT45DB321D"},
+    { 8192,  1, 1056, 11, 0x3C00, "AT45DB642D"},
+    {32768,  1,  264,  9, 0x3C01, "AT45DB641E"},
+    {16384,  1, 1056, 11, 0x1000, "AT45DB1282"},
+    {16384,  1, 2112, 12, 0x1800, "AT45DB2562"},
+    {32768,  1, 2112, 12, 0x2000, "AT45DB5122"}
 };
 
 //------------------------------------------------------------------------------
@@ -144,8 +145,8 @@ unsigned char AT45_SendCommand(
 
     // Sanity checks
     ASSERT(pAt45, "AT45_Command: pAt45 is 0.\n\r");
-    ASSERT(pDesc || (cmd == AT45_STATUS_READ),
-           "AT45_Command: Device has no descriptor, only STATUS_READ command allowed\n\r");
+    ASSERT(pDesc || (cmd == AT45_STATUS_READ || cmd == AT45_ID_READ),
+           "AT45_Command: Device has no descriptor, only STATUS_READ and ID_READ commands allowed\n\r");
 
     // Check if the SPI driver is available
     if (AT45_IsBusy(pAt45)) {
@@ -169,7 +170,7 @@ unsigned char AT45_SendCommand(
             dfAddress = address;
         }
         // Write address bytes
-        if (pDesc->pageNumber >= 16384) {
+        if (pDesc->pageNumber*pDesc->pageSize >= 0x1000000) {
 
             pAt45->pCmdBuffer[1] = ((dfAddress & 0x0F000000) >> 24);
             pAt45->pCmdBuffer[2] = ((dfAddress & 0x00FF0000) >> 16);
@@ -215,25 +216,18 @@ unsigned char AT45_SendCommand(
 /// driver is in use or AT45_ERROR_SPI if there was an error with the SPI driver.
 /// \param pAt45  Pointer to an AT45 driver instance.
 /// \param status  Device status register value.
+/// \param device_id  Device id value.
 //------------------------------------------------------------------------------
-const At45Desc * AT45_FindDevice(At45 *pAt45, unsigned char status)
+const At45Desc * AT45_FindDevice(At45 *pAt45, unsigned char status, unsigned int device_id)
 {
     unsigned int i;
-    unsigned char id = AT45_STATUS_ID(status);
-
-    // Check if status is all one; in which case, it is assumed that no device
-    // is connected
-    if (status == 0xFF) {
-
-        return 0;
-    }
 
     // Look in device array
     i = 0;
     pAt45->pDesc = 0;
     while ((i < NUMDATAFLASH) && !(pAt45->pDesc)) {
 
-        if (at45Devices[i].id == id) {
+        if (at45Devices[i].id == device_id) {
 
             pAt45->pDesc = &(at45Devices[i]);
         }

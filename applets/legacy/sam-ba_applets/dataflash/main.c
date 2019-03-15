@@ -340,7 +340,7 @@ int main(int argc, char **argv)
 
         pMailbox->argument.outputInit.bufferAddress = (unsigned int) &end;
         // Read the JEDEC ID of the device to identify it
-        pDesc = AT45_FindDevice(&at45, AT45D_GetStatus(&at45));
+        pDesc = AT45_FindDevice(&at45, AT45D_GetStatus(&at45), AT45D_GetDeviceId(&at45));
 
         if (!pDesc) {
 

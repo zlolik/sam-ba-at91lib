@@ -104,6 +104,56 @@ unsigned char AT45D_GetStatus(At45 *pAt45)
 }
 
 //------------------------------------------------------------------------------
+/// Retrieves and returns the At45 device id, or 0 if an error
+/// happened.
+/// \param pAt45  Pointer to a At45 driver instance.
+//------------------------------------------------------------------------------
+unsigned int AT45D_GetDeviceId(At45 *pAt45)
+{
+    unsigned char error;
+    unsigned char status;
+    unsigned int device_id = 0;
+    unsigned char test_ID[10];
+
+    SANITY_CHECK(pAt45);
+
+    // Read status
+    status = AT45D_GetStatus(pAt45);
+
+    // Check if status is all one; in which case, it is assumed that no device
+    // is connected
+    if (status == 0xFF) {
+
+        return 0;
+    }
+
+    // Prepare device_id in extended form
+    device_id = (status & 0x3C) << 8;
+
+    // Read ExtendedId to detect AT45DB641E or AT45DB642D
+    if (device_id == 0x3C00) {
+
+        // Issue a status register read command
+        error = AT45_SendCommand(pAt45, AT45_ID_READ, 1, test_ID, 5, 0, 0, 0);
+        ASSERT(!error, "-F- AT45_ID_READ: Failed to issue command.\n\r");
+
+        // Wait for command to terminate
+        while (AT45_IsBusy(pAt45)) {
+
+            AT45D_Wait(pAt45);
+        }
+
+        //TRACE_INFO(" -- AT45_ID_READ %02x %02x %02x %02x %02x --\n\r", test_ID[0], test_ID[1], test_ID[2], test_ID[3], test_ID[4]);
+        // Set ExtendedId
+        device_id |= test_ID[3];
+    }
+
+    //TRACE_INFO(" -- AT45 DEVICE_ID %04x --\n\r", device_id);
+
+    return device_id;
+}
+
+//------------------------------------------------------------------------------
 /// Reads data from the At45 inside the provided buffer. Since a continuous
 /// read command is used, there is no restriction on the buffer size and read
 /// address.

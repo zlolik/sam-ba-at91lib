@@ -101,8 +101,6 @@
 
 /// Returns 1 if the device is ready; otherwise 0.
 #define AT45_STATUS_READY(status)       (status & 0x80)
-/// Returns the device ID code.
-#define AT45_STATUS_ID(status)          (status & 0x3c)
 /// Returns 1 if the device is configured in binary page mode; otherwise 0.
 #define AT45_STATUS_BINARY(status)      (status & 0x01)
 
@@ -202,8 +200,8 @@ typedef struct {
 	unsigned int pageSize;
     /// page offset in command.
 	unsigned int pageOffset;
-    /// Dataflash ID.
-	unsigned char id;
+    /// Dataflash Extended ID = 0xSSEE, where SS=status&0x3C; EE=ManufId[3]
+	unsigned int id;
     /// Identifier.
 	const char *name;
 
@@ -248,7 +246,7 @@ extern unsigned char AT45_SendCommand(
 	SpidCallback callback,
 	void *pArgument);
 
-extern const At45Desc * AT45_FindDevice(At45 *pAt45, unsigned char status);
+extern const At45Desc * AT45_FindDevice(At45 *pAt45, unsigned char status, unsigned int device_id);
 
 extern unsigned int  AT45_PageSize(At45 *pAt45);
 #endif // #ifndef AT45_H
