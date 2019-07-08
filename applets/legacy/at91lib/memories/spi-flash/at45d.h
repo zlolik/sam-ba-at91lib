@@ -62,6 +62,8 @@
 //         Global functions
 //------------------------------------------------------------------------------
 
+#define FORCE_AT45DB641E_PAGE_SIZE   (264)
+
 extern void AT45D_WaitReady(At45 *pAt45); 
 
 extern unsigned char AT45D_GetStatus(At45 *pAt45);
@@ -83,6 +85,7 @@ extern void AT45D_Write(
 extern void AT45D_Erase(At45 *pAt45, unsigned int address);
 
 extern void AT45D_BinaryPage(At45 *pAt45);
+extern void AT45D_ClearBinaryPage(At45 *pAt45);
 
 #endif //#ifndef AT45D_H
 

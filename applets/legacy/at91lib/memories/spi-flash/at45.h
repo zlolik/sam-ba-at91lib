@@ -179,6 +179,10 @@
 #define AT45_BINARY_PAGE_FIRST_OPCODE   0x3D
 #define AT45_BINARY_PAGE                0x2A, 0x80, 0xA6
 
+/// Clearing Power-of-2 binary page size configuration command code.
+#define AT45_CLEAR_BINARY_PAGE_FIRST_OPCODE   0x3D
+#define AT45_CLEAR_BINARY_PAGE                0x2A, 0x80, 0xA7
+
 //------------------------------------------------------------------------------
 //         Types
 //------------------------------------------------------------------------------

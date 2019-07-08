@@ -35,7 +35,7 @@
 //------------------------------------------------------------------------------
 
 /// Refers to the Version of SAM-BA
-#define SAM_BA_APPLETS_VERSION  "2.14mod"
+#define SAM_BA_APPLETS_VERSION  "2.14mod2"
 
 /// Applet initialization command code.
 #define APPLET_CMD_INIT              0x00

@@ -145,8 +145,8 @@ unsigned char AT45_SendCommand(
 
     // Sanity checks
     ASSERT(pAt45, "AT45_Command: pAt45 is 0.\n\r");
-    ASSERT(pDesc || (cmd == AT45_STATUS_READ || cmd == AT45_ID_READ),
-           "AT45_Command: Device has no descriptor, only STATUS_READ and ID_READ commands allowed\n\r");
+    ASSERT(pDesc || (cmd == AT45_STATUS_READ || cmd == AT45_ID_READ || AT45_BINARY_PAGE_FIRST_OPCODE || AT45_CLEAR_BINARY_PAGE_FIRST_OPCODE),
+           "AT45_Command: Device has no descriptor, only STATUS_READ/ID_READ/BINARY_PAGE/CLEAR_BINARY_PAGE commands allowed\n\r");
 
     // Check if the SPI driver is available
     if (AT45_IsBusy(pAt45)) {

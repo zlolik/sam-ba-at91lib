@@ -146,6 +146,18 @@ unsigned int AT45D_GetDeviceId(At45 *pAt45)
         //TRACE_INFO(" -- AT45_ID_READ %02x %02x %02x %02x %02x --\n\r", test_ID[0], test_ID[1], test_ID[2], test_ID[3], test_ID[4]);
         // Set ExtendedId
         device_id |= test_ID[3];
+
+        // AT45DB641E only, FORCE 264 bytes per page
+        if (device_id == 0x3C01) {
+            
+            if (FORCE_AT45DB641E_PAGE_SIZE == 264) {
+                TRACE_INFO(" -- AT45DB641E detected, FORCE 264 bytes per page --\n\r");
+                AT45D_ClearBinaryPage(pAt45);
+            } else {
+                TRACE_INFO(" -- AT45DB641E detected, FORCE 256 bytes per page --\n\r");
+                AT45D_BinaryPage(pAt45);
+            }
+        }
     }
 
     //TRACE_INFO(" -- AT45 DEVICE_ID %04x --\n\r", device_id);
@@ -259,6 +271,33 @@ void AT45D_BinaryPage(At45 *pAt45)
     // Issue a binary page command.
 
     error = AT45_SendCommand(pAt45, AT45_BINARY_PAGE_FIRST_OPCODE, 1, opcode, 3, 0, 0, 0);
+   
+    ASSERT(!error, "-F- AT45_Erase: Could not issue command.\n\r");
+
+    // Wait for end of transfer
+    while (AT45_IsBusy(pAt45)) {
+    
+        AT45D_Wait(pAt45);
+    }
+
+    // Wait until the At45 becomes ready again
+    AT45D_WaitReady(pAt45);
+}
+
+//------------------------------------------------------------------------------
+/// Clear power-of-2 binary page size in the At45.
+/// \param pAt45  Pointer to a At45 driver instance.
+//------------------------------------------------------------------------------
+
+void AT45D_ClearBinaryPage(At45 *pAt45) 
+{
+    unsigned char error;
+    unsigned char opcode[3]= {AT45_CLEAR_BINARY_PAGE};
+    SANITY_CHECK(pAt45);
+
+    // Issue a binary page command.
+
+    error = AT45_SendCommand(pAt45, AT45_CLEAR_BINARY_PAGE_FIRST_OPCODE, 1, opcode, 3, 0, 0, 0);
    
     ASSERT(!error, "-F- AT45_Erase: Could not issue command.\n\r");
 
